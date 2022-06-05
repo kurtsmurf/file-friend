@@ -1,0 +1,12 @@
+body {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  margin: 0;
+  font-family: monospace;
+}
+
+label[for="file-input"] {
+  border: 1px solid;
+  padding: 0.2rem 0.5rem;
+}
