@@ -7,7 +7,7 @@ export function App() {
   const [bufferSourceNode, setBufferSourceNode] = useState<
     AudioBufferSourceNode | null
   >(null);
-  const [loop, setLoop] = useState(false)
+  const [loop, setLoop] = useState(false);
 
   useEffect(stop, [file]);
 
@@ -54,20 +54,25 @@ export function App() {
       <AudioFileInput onChange={loadFile} />
       <article>
         {file && <p>{file.name}</p>}
-        {audioBuffer && <p>{audioBuffer.duration.toFixed(2)}s</p>}
-        {audioBuffer && <p>{audioBuffer.numberOfChannels} channel(s)</p>}
-        {audioBuffer &&
-          (
+        {audioBuffer && (
+          <>
+            <p>{audioBuffer.duration.toFixed(2)}s</p>
+            <p>{audioBuffer.numberOfChannels} channel(s)</p>
             <button onClick={bufferSourceNode ? stop : play}>
               {bufferSourceNode ? "Stop" : "Play"}
             </button>
-          )}
-        {audioBuffer &&
-          (
             <label>
-              loop: <input type="checkbox" disabled={!!bufferSourceNode} checked={loop} onChange={ e => setLoop((e.target as HTMLInputElement).checked)}/>
+              loop:{" "}
+              <input
+                type="checkbox"
+                disabled={!!bufferSourceNode}
+                checked={loop}
+                onChange={(e) =>
+                  setLoop((e.target as HTMLInputElement).checked)}
+              />
             </label>
-          )}
+          </>
+        )}
       </article>
     </>
   );
