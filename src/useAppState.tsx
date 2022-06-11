@@ -6,7 +6,9 @@ type AppEvent =
   | { type: "stop" }
   | { type: "setLoop"; loop: boolean };
 
-type State =
+
+
+type AppState =
   | { status: "empty" }
   | {
     status: "stopped" | "playing";
@@ -64,7 +66,7 @@ export const useAppState = () => {
     setBufferSourceNode(null);
   }
 
-  const state: State = file && audioBuffer
+  const state: AppState = file && audioBuffer
     ? {
       status: bufferSourceNode ? "playing" : "stopped",
       name: file.name,

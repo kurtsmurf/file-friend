@@ -1,6 +1,6 @@
 import { useRef } from "preact/hooks";
 
-type Props = { onChange: (file: File) => void }
+type Props = { onChange: (file: File) => void };
 
 export const AudioFileInput = ({ onChange }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null);
