@@ -1,7 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { AudioFileInput } from "./AudioFileInput";
 
-export function App() {
+const useBlah = () => {
   const [file, setFile] = useState<File | null>(null);
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
   const [bufferSourceNode, setBufferSourceNode] = useState<
@@ -48,6 +48,11 @@ export function App() {
     bufferSourceNode?.stop();
     setBufferSourceNode(null);
   }
+  return { loadFile, file, audioBuffer, bufferSourceNode, loop, setLoop, play, stop }
+}
+
+export function App() {
+  const { loadFile, file, audioBuffer, bufferSourceNode, loop, setLoop, play, stop } = useBlah();
 
   return (
     <>
