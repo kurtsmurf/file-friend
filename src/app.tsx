@@ -1,83 +1,41 @@
-import { useEffect, useState } from "preact/hooks";
+import { useAppState } from "./useAppState";
 import { AudioFileInput } from "./AudioFileInput";
 
-const useBlah = () => {
-  const [file, setFile] = useState<File | null>(null);
-  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
-  const [bufferSourceNode, setBufferSourceNode] = useState<
-    AudioBufferSourceNode | null
-  >(null);
-  const [loop, setLoop] = useState(false);
-
-  useEffect(stop, [file]);
-
-  function loadFile(newFile: File | null) {
-    if (!newFile) {
-      return;
-    }
-    setAudioBuffer(null);
-    setFile(newFile);
-    const reader = new FileReader();
-    reader.onloadend = (e) => {
-      const result = e.target?.result;
-      if (!result || typeof result !== "object") {
-        return;
-      }
-      new AudioContext()
-        .decodeAudioData(result)
-        .then(setAudioBuffer);
-    };
-    reader.readAsArrayBuffer(newFile);
-  }
-
-  function play() {
-    if (!audioBuffer) {
-      return;
-    }
-    const audioContext = new AudioContext();
-    const bufferSourceNode = audioContext.createBufferSource();
-    bufferSourceNode.buffer = audioBuffer;
-    bufferSourceNode.connect(audioContext.destination);
-    bufferSourceNode.onended = stop;
-    bufferSourceNode.loop = loop;
-    bufferSourceNode.start();
-    setBufferSourceNode(bufferSourceNode);
-  }
-
-  function stop() {
-    bufferSourceNode?.stop();
-    setBufferSourceNode(null);
-  }
-  return { loadFile, file, audioBuffer, bufferSourceNode, loop, setLoop, play, stop }
-}
-
 export function App() {
-  const { loadFile, file, audioBuffer, bufferSourceNode, loop, setLoop, play, stop } = useBlah();
+  const { state, dispatch } = useAppState();
 
   return (
     <>
-      <AudioFileInput onChange={loadFile} />
+      <AudioFileInput onChange={(file) => dispatch({ type: "load", file })} />
       <article>
-        {file && <p>{file.name}</p>}
-        {audioBuffer && (
-          <>
-            <p>{audioBuffer.duration.toFixed(2)}s</p>
-            <p>{audioBuffer.numberOfChannels} channel(s)</p>
-            <button onClick={bufferSourceNode ? stop : play}>
-              {bufferSourceNode ? "Stop" : "Play"}
-            </button>
-            <label>
-              loop:{" "}
-              <input
-                type="checkbox"
-                disabled={!!bufferSourceNode}
-                checked={loop}
-                onChange={(e) =>
-                  setLoop((e.target as HTMLInputElement).checked)}
-              />
-            </label>
-          </>
-        )}
+        {state.status !== "empty" &&
+          (
+            <>
+              <p>{state.name}</p>
+              <p>{state.duration.toFixed(2)}s</p>
+              <p>{state.numberOfChannels} channel(s)</p>
+              <button
+                onClick={state.status === "playing"
+                  ? () => dispatch({ type: "stop" })
+                  : () => dispatch({ type: "play" })}
+              >
+                {state.status === "playing" ? "Stop" : "Play"}
+              </button>
+              <label>
+                loop:{" "}
+                <input
+                  type="checkbox"
+                  disabled={state.status === "playing"}
+                  checked={state.loop}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "setLoop",
+                      loop: (e.target as HTMLInputElement).checked,
+                    })}
+                />
+              </label>
+            </>
+          )}
       </article>
     </>
   );
