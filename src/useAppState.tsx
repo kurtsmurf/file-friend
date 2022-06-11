@@ -6,8 +6,6 @@ type AppEvent =
   | { type: "stop" }
   | { type: "setLoop"; loop: boolean };
 
-
-
 type AppState =
   | { status: "empty" }
   | {
@@ -72,7 +70,7 @@ export const useAppState = () => {
       name: file.name,
       duration: audioBuffer.duration,
       numberOfChannels: audioBuffer.numberOfChannels,
-      loop: false,
+      loop,
     }
     : { status: "empty" };
 

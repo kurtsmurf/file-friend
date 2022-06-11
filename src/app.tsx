@@ -25,10 +25,10 @@ export function App() {
               type="checkbox"
               disabled={state.status === "playing"}
               checked={state.loop}
-              onChange={(e) =>
+              onClick={() =>
                 dispatch({
                   type: "setLoop",
-                  loop: (e.target as HTMLInputElement).checked,
+                  loop: !state.loop,
                 })}
             />
           </label>
