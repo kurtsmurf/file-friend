@@ -1,95 +1,87 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useReducer } from "preact/hooks";
+
+const audioContext = new AudioContext();
+
+function play(buffer: AudioBuffer, loop: boolean) {
+  const bufferSourceNode = audioContext.createBufferSource();
+  bufferSourceNode.buffer = buffer;
+  bufferSourceNode.connect(audioContext.destination);
+  bufferSourceNode.loop = loop;
+  bufferSourceNode.start();
+
+  return bufferSourceNode;
+}
 
 type AppEvent =
-  | { type: "load"; file: File }
-  | { type: "play" }
-  | { type: "stop" }
-  | { type: "setLoop"; loop: boolean };
+  | { type: "load"; buffer: Guy }
+  | { type: "play"; index: number }
+  | { type: "stop"; index: number }
+  | { type: "setLoop"; loop: boolean, index: number;};
 
-type AppState =
-  | { status: "empty" }
-  | {
-    status: "stopped" | "playing";
-    name: string;
-    duration: number;
-    numberOfChannels: number;
-    loop: boolean;
-  };
+export type Guy = {
+  name: string;
+  loop: boolean;
+  buffer: AudioBuffer;
+  node?: AudioBufferSourceNode;
+};
 
-export const useAppState = () => {
-  const [file, setFile] = useState<File | null>(null);
-  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
-  const [bufferSourceNode, setBufferSourceNode] = useState<
-    AudioBufferSourceNode | null
-  >(null);
-  const [loop, setLoop] = useState(false);
+type AppState = {
+  guys: Guy[]
+}
 
-  useEffect(stop, [file]);
-
-  function loadFile(newFile: File | null) {
-    if (!newFile) {
-      return;
-    }
-    setAudioBuffer(null);
-    setFile(newFile);
-    const reader = new FileReader();
-    reader.onloadend = (e) => {
-      const result = e.target?.result;
-      if (!result || typeof result !== "object") {
-        return;
+const reducer = (state: AppState, event: AppEvent): AppState => {
+  switch (event.type) {
+    case "load": {
+      return {
+        ...state, guys: [...state.guys, event.buffer]
       }
-      new AudioContext()
-        .decodeAudioData(result)
-        .then(setAudioBuffer);
-    };
-    reader.readAsArrayBuffer(newFile);
+    }
+    case "play": {
+      return {
+        ...state,
+        guys: state.guys.map((guy, index) => {
+          if (index !== event.index) return guy;
+
+          guy.node?.stop();
+
+          return {
+            ...guy,
+            node: play(guy.buffer, guy.loop)
+          }
+        })
+      }
+    }
+    case "stop": {
+      return {
+        ...state,
+        guys: state.guys.map((guy, index) => {
+          if (index !== event.index) return guy;
+          guy.node?.stop();
+          return {
+            ...guy,
+            node: undefined,
+          }
+        })
+      };
+    }
+    case "setLoop": {
+      return {
+        ...state,
+        guys: state.guys.map((guy, index) => {
+          if (index !== event.index) return guy;
+          return {...guy, loop: event.loop}
+        })
+      };
+    }
   }
+};
 
-  function play() {
-    if (!audioBuffer) {
-      return;
+export const useAppState = (): [AppState, (e: AppEvent) => void] => {
+  const [state, dispatch] = useReducer(reducer, { guys: []});
+  useEffect(() => state.guys.forEach((guy, index) => {
+    if (guy.node && !guy.node.onended) {
+      guy.node.onended = () => dispatch({ type: 'stop', index })
     }
-    const audioContext = new AudioContext();
-    const bufferSourceNode = audioContext.createBufferSource();
-    bufferSourceNode.buffer = audioBuffer;
-    bufferSourceNode.connect(audioContext.destination);
-    bufferSourceNode.onended = stop;
-    bufferSourceNode.loop = loop;
-    bufferSourceNode.start();
-    setBufferSourceNode(bufferSourceNode);
-  }
-
-  function stop() {
-    bufferSourceNode?.stop();
-    setBufferSourceNode(null);
-  }
-
-  const state: AppState = file && audioBuffer
-    ? {
-      status: bufferSourceNode ? "playing" : "stopped",
-      name: file.name,
-      duration: audioBuffer.duration,
-      numberOfChannels: audioBuffer.numberOfChannels,
-      loop,
-    }
-    : { status: "empty" };
-
-  const dispatch = (event: AppEvent) => {
-    switch (event.type) {
-      case "load": {
-        return loadFile(event.file);
-      }
-      case "play": {
-        return play();
-      }
-      case "stop": {
-        return stop();
-      }
-      case "setLoop": {
-        return setLoop(event.loop);
-      }
-    }
-  };
-
-  return { state, dispatch };
+  }), [state.guys])
+  return [state, dispatch];
 };

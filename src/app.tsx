@@ -1,39 +1,45 @@
 import { useAppState } from "./useAppState";
 import { AudioFileInput } from "./AudioFileInput";
+import { bufferOfFile } from "./bufferOfFile";
 
 export function App() {
-  const { state, dispatch } = useAppState();
+  const [state, dispatch] = useAppState();
+
+  console.log(JSON.stringify(state, null, 2))
 
   return (
     <>
-      <AudioFileInput onChange={(file) => dispatch({ type: "load", file })} />
-      {state.status !== "empty" && (
-        <article>
-          <p>{state.name}</p>
-          <p>{state.duration.toFixed(2)}s</p>
-          <p>{state.numberOfChannels} channel(s)</p>
+      <AudioFileInput onChange={async (file) => {
+        dispatch({ type: "load", buffer: await bufferOfFile(file) })
+      }} />
+      {state.guys.map((buffer, index) => (
+        <article key={index}>
+          <p>{buffer.name}</p>
+          <p>{buffer.buffer.duration.toFixed(2)}s</p>
+          <p>{buffer.buffer.numberOfChannels} channel(s)</p>
           <button
-            onClick={state.status === "playing"
-              ? () => dispatch({ type: "stop" })
-              : () => dispatch({ type: "play" })}
+            onClick={!!buffer.node
+              ? () => dispatch({ type: "stop", index })
+              : () => dispatch({ type: "play", index })}
           >
-            {state.status === "playing" ? "Stop" : "Play"}
+            {!!buffer.node ? "Stop" : "Play"}
           </button>
           <label>
             loop:{" "}
             <input
               type="checkbox"
-              disabled={state.status === "playing"}
-              checked={state.loop}
+              disabled={!!buffer.node}
+              checked={buffer.loop}
               onClick={() =>
                 dispatch({
                   type: "setLoop",
-                  loop: !state.loop,
+                  loop: !buffer.loop,
+                  index,
                 })}
             />
           </label>
         </article>
-      )}
+      ))}
     </>
   );
 }
