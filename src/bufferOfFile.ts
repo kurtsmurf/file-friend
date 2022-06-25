@@ -1,6 +1,6 @@
 import { Guy } from "./useAppState";
 
-export function bufferOfFile(audioContext: AudioContext, file: File): Promise<Guy> {
+export function guyOfFile(audioContext: AudioContext, file: File): Promise<Guy> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = (e) => {

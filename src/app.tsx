@@ -1,6 +1,6 @@
 import { useAppState } from "./useAppState";
 import { AudioFileInput } from "./AudioFileInput";
-import { bufferOfFile } from "./bufferOfFile";
+import { guyOfFile } from "./bufferOfFile";
 
 export function App() {
   const [state, dispatch] = useAppState();
@@ -12,7 +12,7 @@ export function App() {
       <AudioFileInput
         onChange={async (files) => {
           for (const file of files) {
-            dispatch({ type: "load", guy: await bufferOfFile(state.audioContext, file) });
+            dispatch({ type: "load", guy: await guyOfFile(state.audioContext, file) });
           }
         }}
       />
