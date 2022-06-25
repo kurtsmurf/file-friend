@@ -16,7 +16,7 @@ type AppEvent =
   | { type: "load"; buffer: Guy }
   | { type: "play"; index: number }
   | { type: "stop"; index: number }
-  | { type: "setLoop"; loop: boolean, index: number;};
+  | { type: "setLoop"; loop: boolean; index: number };
 
 export type Guy = {
   name: string;
@@ -26,15 +26,16 @@ export type Guy = {
 };
 
 type AppState = {
-  guys: Guy[]
-}
+  guys: Guy[];
+};
 
 const reducer = (state: AppState, event: AppEvent): AppState => {
   switch (event.type) {
     case "load": {
       return {
-        ...state, guys: [...state.guys, event.buffer]
-      }
+        ...state,
+        guys: [...state.guys, event.buffer],
+      };
     }
     case "play": {
       return {
@@ -46,10 +47,10 @@ const reducer = (state: AppState, event: AppEvent): AppState => {
 
           return {
             ...guy,
-            node: play(guy.buffer, guy.loop)
-          }
-        })
-      }
+            node: play(guy.buffer, guy.loop),
+          };
+        }),
+      };
     }
     case "stop": {
       return {
@@ -60,8 +61,8 @@ const reducer = (state: AppState, event: AppEvent): AppState => {
           return {
             ...guy,
             node: undefined,
-          }
-        })
+          };
+        }),
       };
     }
     case "setLoop": {
@@ -69,19 +70,20 @@ const reducer = (state: AppState, event: AppEvent): AppState => {
         ...state,
         guys: state.guys.map((guy, index) => {
           if (index !== event.index) return guy;
-          return {...guy, loop: event.loop}
-        })
+          return { ...guy, loop: event.loop };
+        }),
       };
     }
   }
 };
 
 export const useAppState = (): [AppState, (e: AppEvent) => void] => {
-  const [state, dispatch] = useReducer(reducer, { guys: []});
-  useEffect(() => state.guys.forEach((guy, index) => {
-    if (guy.node && !guy.node.onended) {
-      guy.node.onended = () => dispatch({ type: 'stop', index })
-    }
-  }), [state.guys])
+  const [state, dispatch] = useReducer(reducer, { guys: [] });
+  useEffect(() =>
+    state.guys.forEach((guy, index) => {
+      if (guy.node && !guy.node.onended) {
+        guy.node.onended = () => dispatch({ type: "stop", index });
+      }
+    }), [state.guys]);
   return [state, dispatch];
 };

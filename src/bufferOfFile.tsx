@@ -8,7 +8,7 @@ export function bufferOfFile(file: File): Promise<Guy> {
       if (result && typeof result === "object") {
         new AudioContext()
           .decodeAudioData(result)
-          .then(ab => {
+          .then((ab) => {
             resolve({
               name: file.name,
               buffer: ab,

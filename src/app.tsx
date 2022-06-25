@@ -5,13 +5,17 @@ import { bufferOfFile } from "./bufferOfFile";
 export function App() {
   const [state, dispatch] = useAppState();
 
-  console.log(JSON.stringify(state, null, 2))
+  console.log(JSON.stringify(state, null, 2));
 
   return (
     <>
-      <AudioFileInput onChange={async (file) => {
-        dispatch({ type: "load", buffer: await bufferOfFile(file) })
-      }} />
+      <AudioFileInput
+        onChange={async (files) => {
+          for (const file of files) {
+            dispatch({ type: "load", buffer: await bufferOfFile(file) });
+          }
+        }}
+      />
       {state.guys.map((buffer, index) => (
         <article key={index}>
           <p>{buffer.name}</p>

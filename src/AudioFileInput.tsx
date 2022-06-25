@@ -1,6 +1,6 @@
 import { useRef } from "preact/hooks";
 
-type Props = { onChange: (file: File) => void };
+type Props = { onChange: (files: FileList) => void };
 
 export const AudioFileInput = ({ onChange }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -24,8 +24,8 @@ export const AudioFileInput = ({ onChange }: Props) => {
         multiple
         accept="audio/*"
         onChange={(e) => {
-          const file = (e.target as HTMLInputElement).files?.item(0);
-          file && onChange(file);
+          const files = (e.target as HTMLInputElement).files;
+          files && onChange(files);
         }}
         style="display: none;"
       />
