@@ -12,7 +12,7 @@ export function App() {
       <AudioFileInput
         onChange={async (files) => {
           for (const file of files) {
-            dispatch({ type: "load", buffer: await bufferOfFile(file) });
+            dispatch({ type: "load", guy: await bufferOfFile(state.audioContext, file) });
           }
         }}
       />

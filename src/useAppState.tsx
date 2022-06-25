@@ -13,7 +13,7 @@ function play(buffer: AudioBuffer, loop: boolean) {
 }
 
 type AppEvent =
-  | { type: "load"; buffer: Guy }
+  | { type: "load"; guy: Guy }
   | { type: "play"; index: number }
   | { type: "stop"; index: number }
   | { type: "setLoop"; loop: boolean; index: number };
@@ -27,6 +27,7 @@ export type Guy = {
 
 type AppState = {
   guys: Guy[];
+  audioContext: AudioContext;
 };
 
 const reducer = (state: AppState, event: AppEvent): AppState => {
@@ -34,7 +35,7 @@ const reducer = (state: AppState, event: AppEvent): AppState => {
     case "load": {
       return {
         ...state,
-        guys: [...state.guys, event.buffer],
+        guys: [...state.guys, event.guy],
       };
     }
     case "play": {
@@ -78,7 +79,7 @@ const reducer = (state: AppState, event: AppEvent): AppState => {
 };
 
 export const useAppState = (): [AppState, (e: AppEvent) => void] => {
-  const [state, dispatch] = useReducer(reducer, { guys: [] });
+  const [state, dispatch] = useReducer(reducer, { audioContext, guys: [] });
   useEffect(() =>
     state.guys.forEach((guy, index) => {
       if (guy.node && !guy.node.onended) {
