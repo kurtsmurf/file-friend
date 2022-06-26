@@ -1,12 +1,14 @@
 import { useEffect, useReducer } from "preact/hooks";
 
 const audioContext = new AudioContext();
+const out = audioContext.createDynamicsCompressor();
+out.connect(audioContext.destination);
 
 function play(buffer: AudioBuffer, loop: boolean) {
   const bufferSourceNode = audioContext.createBufferSource();
   bufferSourceNode.buffer = buffer;
-  bufferSourceNode.connect(audioContext.destination);
   bufferSourceNode.loop = loop;
+  bufferSourceNode.connect(out);
   bufferSourceNode.start();
 
   return bufferSourceNode;
@@ -16,13 +18,15 @@ type AppEvent =
   | { type: "load"; guy: Guy }
   | { type: "play"; index: number }
   | { type: "stop"; index: number }
-  | { type: "setLoop"; loop: boolean; index: number };
+  | { type: "setLoop"; loop: boolean; index: number }
+  | { type: "setPlaybackRate"; value: number; index: number };
 
 export type Guy = {
   name: string;
   loop: boolean;
   buffer: AudioBuffer;
   node?: AudioBufferSourceNode;
+  playbackRate: number;
 };
 
 type AppState = {
@@ -72,6 +76,21 @@ const reducer = (state: AppState, event: AppEvent): AppState => {
         guys: state.guys.map((guy, index) => {
           if (index !== event.index) return guy;
           return { ...guy, loop: event.loop };
+        }),
+      };
+    }
+    case "setPlaybackRate": {
+      return {
+        ...state,
+        guys: state.guys.map((guy, index) => {
+          if (index !== event.index) return guy;
+
+          state.guys[event.index]?.node?.playbackRate.setValueAtTime(
+            event.value,
+            audioContext.currentTime,
+          );
+
+          return { ...guy, playbackRate: event.value };
         }),
       };
     }

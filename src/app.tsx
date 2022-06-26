@@ -12,34 +12,52 @@ export function App() {
       <AudioFileInput
         onChange={async (files) => {
           for (const file of files) {
-            dispatch({ type: "load", guy: await guyOfFile(state.audioContext, file) });
+            dispatch({
+              type: "load",
+              guy: await guyOfFile(state.audioContext, file),
+            });
           }
         }}
       />
-      {state.guys.map((buffer, index) => (
+      {state.guys.map((guy, index) => (
         <article key={index}>
-          <p>{buffer.name}</p>
-          <p>{buffer.buffer.duration.toFixed(2)}s</p>
-          <p>{buffer.buffer.numberOfChannels} channel(s)</p>
+          <p>{guy.name}</p>
+          <p>{guy.buffer.duration.toFixed(2)}s</p>
+          <p>{guy.buffer.numberOfChannels} channel(s)</p>
           <button
-            onClick={!!buffer.node
+            onClick={!!guy.node
               ? () => dispatch({ type: "stop", index })
               : () => dispatch({ type: "play", index })}
           >
-            {!!buffer.node ? "Stop" : "Play"}
+            {!!guy.node ? "Stop" : "Play"}
           </button>
           <label>
             loop:{" "}
             <input
               type="checkbox"
-              disabled={!!buffer.node}
-              checked={buffer.loop}
+              disabled={!!guy.node}
+              checked={guy.loop}
               onClick={() =>
                 dispatch({
                   type: "setLoop",
-                  loop: !buffer.loop,
+                  loop: !guy.loop,
                   index,
                 })}
+            />
+          </label>
+          <label>
+            playbackRate:{" "}
+            <input
+              type="number"
+              value={guy.playbackRate}
+              onChange={(e) => {
+                const value = parseFloat((e.target as HTMLInputElement).value);
+                dispatch({
+                  type: "setPlaybackRate",
+                  value,
+                  index,
+                });
+              }}
             />
           </label>
         </article>
